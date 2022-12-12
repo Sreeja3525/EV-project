@@ -1,0 +1,77 @@
+%Harmony Search Algorithm%
+clc
+clear all
+close all
+%----------------------------------------------------------------
+%Initialization of HSA parameters%%
+HMS = 10; % Harmony memory size
+Maxiter = 10000; % Maximum iteration
+HMCR = 0.8 ;%% Harmony Memory Considering Rate, 0.7 to 0.9%
+PAR = 0.4;%% Pitch Adjusting Rate, 0.1 to 0.4
+% %----------------------------------------------------------------
+%% Objective function and its limits
+f = @(x) (x(1)^2 + x(2) - 11)^2 + (x(1) + x(2)^2 - 7)^2 + 0.1*( (x(1)-3)^2 + (x(2)-2)^2 );
+xU = [6 6];
+xL = [-6 -6];
+b = (xU-xL)/1000;
+N = length(xL);
+%%---------------------------------------------------------------
+%%Generation of initial solution
+for j =1:HMS
+    HM(j,:)=xL + (xU-xL).*rand(1,N);
+    F(j,:) = f(HM(j,:));%%Checking fittness function or objective function value
+end
+%%-----------------------------------------------------------------
+%% Adjusting solution vectors
+for j = 1:Maxiter
+    for i = 1:N
+        if rand < HMCR %% Checking HMCR condition
+            xnew(i) = HM(ceil(rand*HMS),i);
+            if rand< PAR
+                xnew(i) = xnew(i) + (2*rand-1)*b(i); %% Adjusting the solution
+                 xnew(i) = min(max(xnew(i),xL(i)),xU(i));%% Checking for limits
+            end
+        else
+            xnew(i) = xL(i) + rand*(xU(i)-xL(i));
+                
+        end
+    end
+    %%-------------------------------------------------------------
+    %%Saving new solution in history
+    history_xnew(j,:) = xnew;
+    %% Finding the objective function value with new vector
+    fnew=f(xnew);
+    %%--------------------------------------------------------------
+    %% Finding the worst value and its index
+    [fworst idxworst] = max(F);
+    %% Comparing the fitness of new soln and replacing
+    if f(xnew) < fworst 
+        HM(idxworst,:)=xnew;
+        F(idxworst)= fnew;
+    end
+    %%_-----------------------------------------------------------
+    %%Storing the best value
+    fbest_history(j) = min(F);
+    end
+        
+  %%-----------------------------------
+  
+  %% Return the best harmony found
+  [fbest, idxbest]=min(F);
+  xbest=HM(idxbest,:);
+%%---------------------------------------
+fprintf('Best solution: \n')
+display(xbest)
+fprintf('function value:\n')
+display(fbest)
+
+% %% --------------------------------------------------------------------------
+%% Displaying the convergence
+figure
+semilogy(fbest_history)
+xlabel('{\itImp}')
+ylabel('{\itx_best}')
+set(gca,'YGrid','on')
+
+
+
